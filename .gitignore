@@ -1,0 +1,42 @@
+# Python 환경
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# ML 모델 파일들 (대용량 파일)
+ml/models/
+model/
+output/
+ResNet18_onnx/
+*.th
+*.onnx
+*.pt
+*.pth
+*.whl
+
+# 임시 파일들
+*.csv
+*.json
+test/
+.DS_Store
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 로그 파일
+*.log
+logs/
