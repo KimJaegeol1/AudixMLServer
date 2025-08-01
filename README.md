@@ -83,7 +83,7 @@ curl -X POST "http://localhost:8000/developer/device/analyze" \
   "analysis_results": {
     "device_name": "device_1001",
     "total_parts": 2,
-    "normal_score": 0.847,
+    "normalScore": 0.847,
     "results": [
       {
         "part_name": "fan",

@@ -14,6 +14,7 @@ from pydantic import BaseModel
 
 from service import get_audio_service
 from service.device_redis_repository import update_device_normal_score
+from service.redis_pubsub import publish_low_normal_score_alert
 
 # 라우터 생성
 router = APIRouter(
@@ -56,6 +57,8 @@ async def analyze_audio(
     - **file**: 분석할 WAV 파일 (10초, 44.1kHz, mono 권장)
     - **target_parts**: 분석할 부품들 (콤마로 구분, 빈 값이면 모든 부품 분석)
     - **device_id**: 장치 ID (숫자)
+
+    normalScore가 0.5 미만인 경우 Redis Pub/Sub으로 알림이 발행됩니다.
     """
     
     # 파일 형식 확인
@@ -108,14 +111,17 @@ async def analyze_audio(
             try:
                 update_device_normal_score(device_id, normal_score)
                 
-                # 결과에 normalScore 추가
-                result["analysis_results"]["normal_score"] = normal_score
+                # 결과에 normalScore 추가 (Redis와 동일한 키명 사용)
+                result["analysis_results"]["normalScore"] = normal_score
                 print(f"📊 normalScore 계산: {normal_score:.3f} (평균 이상확률: {avg_anomaly_probability:.3f})")
+                
+                # normalScore가 0.5 이하면 Pub/Sub 알림 발행
+                publish_low_normal_score_alert(device_id, normal_score)
                 
             except Exception as redis_error:
                 print(f"⚠️ Redis 업데이트 실패: {redis_error}")
                 # Redis 실패해도 분석 결과는 반환
-                result["analysis_results"]["normal_score"] = normal_score
+                result["analysis_results"]["normalScore"] = normal_score
         
         return result
         
