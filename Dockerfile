@@ -4,7 +4,7 @@ FROM python:3.9-slim
 # 작업 디렉토리 설정
 WORKDIR /app
 
-# 시스템 패키지 업데이트 및 필수 도구 설치
+# 시스템 패키지를 먼저 설치 (캐시 활용)
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
@@ -14,13 +14,15 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Python 패키지 의존성 파일 복사
+# 기본 Python 패키지들만 먼저 설치 (자주 변경되지 않음)
 COPY requirements.txt .
+RUN pip install --no-cache-dir torch torchaudio && \
+    pip install --no-cache-dir numpy scipy librosa
 
-# Python 패키지 설치
+# 나머지 패키지들 설치
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Demucs와 Dora 패키지를 Git에서 직접 설치 (최신 버전)
+# Demucs와 Dora 패키지를 마지막에 설치 (가장 오래 걸림)
 RUN pip install git+https://github.com/facebookresearch/demucs.git --no-deps && \
     pip install git+https://github.com/facebookresearch/dora.git --no-deps
 

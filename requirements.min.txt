@@ -1,0 +1,33 @@
+# 빠른 빌드를 위한 최소 requirements
+# 핵심 패키지들만 포함
+
+# Core ML packages
+torch>=1.13.0
+torchaudio>=0.13.0
+
+# Essential audio processing
+numpy==1.24.0
+scipy>=1.7.0
+librosa>=0.10.0
+
+# FastAPI stack
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
+pydantic>=2.0.0
+
+# ML inference
+onnx
+onnxruntime
+
+# Redis client
+redis>=5.0.0
+
+# Environment
+python-dotenv>=1.0.0
+
+# Demucs dependencies (manually managed)
+einops>=0.6.0
+julius>=0.2.6
+hydra-core>=1.1.0
+omegaconf>=2.2.2
