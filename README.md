@@ -6,17 +6,6 @@ FastAPI 기반의 기계 부품 오디오 이상 감지 ML 서버입니다.
 
 Audix ML Server는 기계 부품(팬, 펌프, 슬라이더, 기어박스, 베어링)의 오디오 신호를 분석하여 이상 상태를 감지하는 머신러닝 서비스입니다.
 
-### 🏗️ 시스템 구성
-
-```
-🌐 Frontend (React)
-    ↕️
-🚀 App Server (NestJS) :3000
-    ↕️
-🤖 ML Server (FastAPI) :8000  ← 이 프로젝트
-    ↕️
-📊 Redis :6379
-```
 
 ## 🚀 빠른 시작
 
