@@ -102,6 +102,27 @@ curl -X POST "http://localhost:8000/developer/device/analyze" \
 
 ## 🤖 ML 파이프라인
 
+### 필수 모델 파일들
+
+Docker에서 정상 작동하려면 다음 모델 파일들이 필요합니다:
+
+```
+ml/models/
+├── demucs/              # 음원 분리 모델
+│   ├── 6a76e118.th     # 메인 Demucs 모델
+│   └── 48ce2dda_v6.th  # 추가 모델
+└── onnx/               # 이상 감지 모델 (ResNet18)
+    ├── fold0_best_model_bearing.onnx
+    ├── fold0_best_model_fan.onnx
+    ├── fold0_best_model_gearbox.onnx
+    ├── fold0_best_model_pump.onnx
+    └── fold0_best_model_slider.onnx
+```
+
+⚠️ **중요**: 이 모델 파일들이 없으면 ML 서비스가 `unavailable` 상태가 되며 분석 API는 503 에러를 반환합니다.
+
+### 파이프라인 단계
+
 1. **오디오 전처리**: WAV 파일 로드 및 정규화
 2. **소스 분리**: Demucs 모델로 각 부품별 신호 분리
 3. **특징 추출**: 멜 스펙트로그램 생성
@@ -182,19 +203,3 @@ python test_client.py
 # 헬스체크
 curl http://localhost:8000/server/health
 ```
-
-## 📝 라이센스
-
-이 프로젝트는 MIT 라이센스 하에 배포됩니다.
-
-## 🤝 기여
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
----
-
-**Made with ❤️ for Audix Project**

@@ -50,9 +50,11 @@ Thumbs.db
 Dockerfile
 .dockerignore
 
-# Test files and results
+# Test files and results - 하지만 ML 모델 파일은 유지
 *.json
 test_results/
+!ml/models/**/*.th
+!ml/models/**/*.onnx
 
 # Logs
 *.log
@@ -61,3 +63,7 @@ logs/
 # Temporary files
 *.tmp
 *.temp
+
+# 명시적으로 ML 모델 파일들은 Docker에 포함
+# !ml/models/demucs/*.th
+# !ml/models/onnx/*.onnx

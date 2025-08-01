@@ -23,6 +23,7 @@ treetable>=0.2.0
 
 # pip install git+https://github.com/adefossez/demucs.git --no-deps
 # pip install git+https://github.com/facebookresearch/dora.git --no-deps
+# 위 패키지들은 Dockerfile에서 직접 설치됨
 
 onnx
 onnxruntime
