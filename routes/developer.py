@@ -32,6 +32,144 @@ class AnalysisResponse(BaseModel):
     timestamp: str
 
 
+class DeviceUpdateRequest(BaseModel):
+    """디바이스 업데이트 요청 모델"""
+    deviceId: int
+    normalScore: float
+    status: str
+    aiText: str
+
+
+class DeviceUpdateResponse(BaseModel):
+    """디바이스 업데이트 응답 모델"""
+    success: bool
+    message: str
+    deviceId: int
+    timestamp: str
+
+
+@router.post("/device/update", response_model=DeviceUpdateResponse, summary="디바이스 상태 업데이트")
+async def update_device_status(request: DeviceUpdateRequest):
+    """
+    Redis에 저장된 디바이스 정보를 업데이트합니다.
+    
+    - **deviceId**: 업데이트할 디바이스 ID
+    - **normalScore**: 정상도 점수 (0.0 ~ 1.0)
+    - **status**: 디바이스 상태 (normal, warning, danger, repair, offline)
+    - **aiText**: AI 분석 텍스트
+    """
+    try:
+        # Redis 연결 및 업데이트
+        import redis
+        
+        # Redis 클라이언트 생성
+        redis_client = redis.Redis(host='redis-server', port=6379, db=0, decode_responses=True)
+        
+        # 디바이스 키
+        device_key = f"device:{request.deviceId}"
+        
+        # 기존 디바이스 존재 확인
+        if not redis_client.exists(device_key):
+            raise HTTPException(
+                status_code=404, 
+                detail=f"Device {request.deviceId} not found in Redis"
+            )
+        
+        # Redis HSET으로 필드 업데이트
+        update_data = {
+            "normalScore": str(request.normalScore),
+            "status": request.status,
+            "aiText": request.aiText
+        }
+        
+        # 업데이트 수행
+        updated_fields = redis_client.hset(device_key, mapping=update_data)
+        
+        print(f"📊 Device {request.deviceId} 업데이트 완료:")
+        print(f"   - normalScore: {request.normalScore}")
+        print(f"   - status: {request.status}")
+        print(f"   - aiText: {request.aiText}")
+        
+        # normalScore가 0.6 이하면 알림 발행
+        if request.normalScore <= 0.6:
+            try:
+                publish_low_normal_score_alert(request.deviceId, request.normalScore)
+                print(f"🚨 낮은 normalScore 알림 발행: {request.normalScore}")
+            except Exception as alert_error:
+                print(f"⚠️ 알림 발행 실패: {alert_error}")
+        
+        return DeviceUpdateResponse(
+            success=True,
+            message=f"Device {request.deviceId} successfully updated",
+            deviceId=request.deviceId,
+            timestamp=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        )
+        
+    except redis.RedisError as redis_error:
+        print(f"❌ Redis 오류: {redis_error}")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Redis connection error: {str(redis_error)}"
+        )
+    except HTTPException:
+        # HTTPException은 그대로 다시 발생
+        raise
+    except Exception as e:
+        print(f"❌ 예상치 못한 오류: {e}")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Unexpected error occurred: {str(e)}"
+        )
+
+
+@router.get("/device/{device_id}", summary="디바이스 정보 조회")
+async def get_device_info(device_id: int):
+    """
+    Redis에서 특정 디바이스의 정보를 조회합니다.
+    """
+    try:
+        import redis
+        
+        # Redis 클라이언트 생성
+        redis_client = redis.Redis(host='redis-server', port=6379, db=0, decode_responses=True)
+        
+        # 디바이스 키
+        device_key = f"device:{device_id}"
+        
+        # 디바이스 존재 확인
+        if not redis_client.exists(device_key):
+            raise HTTPException(
+                status_code=404, 
+                detail=f"Device {device_id} not found in Redis"
+            )
+        
+        # 모든 필드 조회
+        device_data = redis_client.hgetall(device_key)
+        
+        return {
+            "success": True,
+            "deviceId": device_id,
+            "data": device_data,
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        
+    except redis.RedisError as redis_error:
+        print(f"❌ Redis 오류: {redis_error}")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Redis connection error: {str(redis_error)}"
+        )
+    except HTTPException:
+        # HTTPException은 그대로 다시 발생
+        raise
+    except Exception as e:
+        print(f"❌ 예상치 못한 오류: {e}")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Unexpected error occurred: {str(e)}"
+        )
+
+
 @router.get("/parts", summary="분석 가능한 부품 목록")
 async def get_available_parts():
     """분석 가능한 부품 목록을 반환합니다."""

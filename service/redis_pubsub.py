@@ -7,7 +7,7 @@ from .redis_config import get_redis_client
 
 # Pub/Sub 설정
 ALERT_CHANNEL = "device_alerts"
-NORMAL_SCORE_THRESHOLD = 0.5
+NORMAL_SCORE_THRESHOLD = 0.6
 
 def publish_low_normal_score_alert(device_id: int, normal_score: float) -> bool:
     """
